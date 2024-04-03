@@ -25,6 +25,11 @@ pub(crate) use context::PluginExecutionCommandContext;
 mod identity;
 pub(crate) use identity::PluginIdentity;
 
+// To facilitate development of plugins in unsupported languages,
+// where the plugin author needs to know a bit more about the plugin protocol.
+mod json_dumper;
+pub use json_dumper::JsonDumper;
+
 use self::interface::{InterfaceManager, PluginInterfaceManager};
 
 use super::EvaluatedCall;

@@ -64,3 +64,7 @@ pub use serializers::EncodingType;
 pub use plugin::Encoder;
 #[doc(hidden)]
 pub use protocol::{PluginCallResponse, PluginOutput};
+
+// To facilitate development of plugins in unsupported languages,
+// where the plugin author needs to know a bit more about the plugin protocol.
+pub use plugin::JsonDumper;
