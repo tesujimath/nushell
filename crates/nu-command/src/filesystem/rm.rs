@@ -135,7 +135,7 @@ fn rm(
     let home: Option<String> = nu_path::home_dir().map(|path| {
         {
             if path.exists() {
-                match nu_path::canonicalize_with(&path, &currentdir_path) {
+                match nu_path::make_absolute_with(&path, &currentdir_path) {
                     Ok(canon_path) => canon_path,
                     Err(_) => path,
                 }
@@ -302,7 +302,7 @@ fn rm(
                 }
             }
             Err(e) => {
-                // glob_from may canonicalize path and return `DirectoryNotFound`
+                // glob_from may make the path absolute and return `DirectoryNotFound`
                 // nushell should suppress the error if `--force` is used.
                 if !(force && matches!(e, ShellError::DirectoryNotFound { .. })) {
                     return Err(e);

@@ -6334,7 +6334,7 @@ pub fn parse(
     trace!("parse");
     let name = match fname {
         Some(fname) => {
-            // use the canonical name for this filename
+            // use the absolute name for this filename
             nu_path::expand_to_real_path(fname)
                 .to_string_lossy()
                 .to_string()

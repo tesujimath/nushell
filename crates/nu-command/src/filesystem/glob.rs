@@ -179,7 +179,7 @@ impl Command for Glob {
         };
 
         let path = engine_state.cwd_as_string(Some(stack))?;
-        let path = match nu_path::canonicalize_with(prefix, path) {
+        let path = match nu_path::make_absolute_with(prefix, path) {
             Ok(path) => path,
             Err(e) if e.to_string().contains("os error 2") =>
             // path we're trying to glob doesn't exist,
@@ -188,7 +188,7 @@ impl Command for Glob {
             }
             Err(e) => {
                 return Err(ShellError::GenericError {
-                    error: "error in canonicalize".into(),
+                    error: "error in make absolute".into(),
                     msg: format!("{e}"),
                     span: Some(glob_pattern.span),
                     help: None,

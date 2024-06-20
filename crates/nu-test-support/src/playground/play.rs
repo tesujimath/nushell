@@ -81,7 +81,7 @@ impl<'a> Playground<'a> {
 
         let fixtures = fs::fixtures();
         let cwd = std::env::current_dir().expect("Could not get current working directory.");
-        let fixtures = nu_path::canonicalize_with(fixtures.clone(), cwd).unwrap_or_else(|e| {
+        let fixtures = nu_path::make_absolute_with(fixtures.clone(), cwd).unwrap_or_else(|e| {
             panic!(
                 "Couldn't canonicalize fixtures path {}: {:?}",
                 fixtures.display(),
@@ -102,7 +102,7 @@ impl<'a> Playground<'a> {
 
         let cwd = std::env::current_dir().expect("Could not get current working directory.");
         let test =
-            nu_path::canonicalize_with(playground_root.join(topic), cwd).unwrap_or_else(|e| {
+            nu_path::make_absolute_with(playground_root.join(topic), cwd).unwrap_or_else(|e| {
                 panic!(
                     "Couldn't canonicalize test path {}: {:?}",
                     playground_root.join(topic).display(),
@@ -111,7 +111,7 @@ impl<'a> Playground<'a> {
             });
 
         let cwd = std::env::current_dir().expect("Could not get current working directory.");
-        let root = nu_path::canonicalize_with(playground_root, cwd).unwrap_or_else(|e| {
+        let root = nu_path::make_absolute_with(playground_root, cwd).unwrap_or_else(|e| {
             panic!(
                 "Couldn't canonicalize tests root path {}: {:?}",
                 playground_root.display(),

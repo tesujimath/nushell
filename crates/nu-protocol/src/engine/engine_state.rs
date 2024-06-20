@@ -894,7 +894,7 @@ impl EngineState {
             .map(|comment_spans| self.build_usage(comment_spans))
     }
 
-    /// Returns the current working directory, which is guaranteed to be canonicalized.
+    /// Returns the current working directory, which is guaranteed to be absolute.
     ///
     /// Returns an empty String if $env.PWD doesn't exist.
     #[deprecated(since = "0.92.3", note = "please use `EngineState::cwd()` instead")]

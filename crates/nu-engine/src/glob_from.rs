@@ -1,5 +1,5 @@
 use nu_glob::MatchOptions;
-use nu_path::{canonicalize_with, expand_path_with};
+use nu_path::{expand_path_with, make_absolute_with};
 use nu_protocol::{NuGlob, ShellError, Span, Spanned};
 use real_parent::PathExt;
 use std::{
@@ -73,7 +73,7 @@ pub fn glob_from(
         if is_symlink {
             (path.parent().map(|parent| parent.to_path_buf()), path)
         } else {
-            let path = if let Ok(p) = canonicalize_with(path.clone(), cwd) {
+            let path = if let Ok(p) = make_absolute_with(path.clone(), cwd) {
                 if p.to_string_lossy().contains(GLOB_CHARS) {
                     // our path might contains GLOB_CHARS too
                     // in such case, we need to escape our path to make

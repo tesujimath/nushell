@@ -1,4 +1,4 @@
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_with;
 use nu_test_support::nu;
 use nu_test_support::playground::{Executable, Playground};
 use pretty_assertions::assert_eq;
@@ -38,7 +38,7 @@ fn setup_fake_config(playground: &mut Playground) -> PathBuf {
         &playground.cwd().join(config_link).display().to_string(),
     );
     let path = Path::new(config_link).join("nushell");
-    canonicalize_with(&path, playground.cwd()).unwrap_or(path)
+    make_absolute_with(&path, playground.cwd()).unwrap_or(path)
 }
 
 fn run(playground: &mut Playground, command: &str) -> String {
@@ -214,14 +214,14 @@ fn test_alternate_config_path() {
     let cwd = std::env::current_dir().expect("Could not get current working directory");
 
     let config_path =
-        nu_path::canonicalize_with(config_file, &cwd).expect("Could not get config path");
+        nu_path::make_absolute_with(config_file, &cwd).expect("Could not get config path");
     let actual = nu!(
         cwd: &cwd,
         format!("nu --config {config_path:?} -c '$nu.config-path'")
     );
     assert_eq!(actual.out, config_path.to_string_lossy().to_string());
 
-    let env_path = nu_path::canonicalize_with(env_file, &cwd).expect("Could not get env path");
+    let env_path = nu_path::make_absolute_with(env_file, &cwd).expect("Could not get env path");
     let actual = nu!(
         cwd: &cwd,
         format!("nu --env-config {env_path:?} -c '$nu.env-path'")

@@ -80,7 +80,7 @@ impl Command for Watch {
             .item
             .trim_end_matches(|x| matches!(x, '\x09'..='\x0d'));
 
-        let path = match nu_path::canonicalize_with(path_no_whitespace, cwd) {
+        let path = match nu_path::make_absolute_with(path_no_whitespace, cwd) {
             Ok(p) => p,
             Err(_) => {
                 return Err(ShellError::DirectoryNotFound {

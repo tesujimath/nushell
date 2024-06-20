@@ -1,6 +1,5 @@
+use crate::util::make_absolute_possible_filename_arg;
 use nu_engine::command_prelude::*;
-
-use crate::util::canonicalize_possible_filename_arg;
 
 #[derive(Clone)]
 pub struct PluginStop;
@@ -54,7 +53,7 @@ impl Command for PluginStop {
     ) -> Result<PipelineData, ShellError> {
         let name: Spanned<String> = call.req(engine_state, stack, 0)?;
 
-        let filename = canonicalize_possible_filename_arg(engine_state, stack, &name.item);
+        let filename = make_absolute_possible_filename_arg(engine_state, stack, &name.item);
 
         let mut found = false;
         for plugin in engine_state.plugins() {

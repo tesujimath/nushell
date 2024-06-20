@@ -1,4 +1,4 @@
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_with;
 use nu_test_support::fs::Stub::EmptyFile;
 use nu_test_support::nu;
 use nu_test_support::playground::Playground;
@@ -14,7 +14,7 @@ fn canonicalize_path() {
         spam.push("spam.txt");
 
         let cwd = std::env::current_dir().expect("Could not get current directory");
-        let actual = canonicalize_with(spam, cwd).expect("Failed to canonicalize");
+        let actual = make_absolute_with(spam, cwd).expect("Failed to canonicalize");
 
         assert!(actual.ends_with("spam.txt"));
     });
@@ -30,7 +30,7 @@ fn canonicalize_unicode_path() {
 
         let cwd = std::env::current_dir().expect("Could not get current directory");
 
-        let actual = canonicalize_with(spam, cwd).expect("Failed to canonicalize");
+        let actual = make_absolute_with(spam, cwd).expect("Failed to canonicalize");
 
         assert!(actual.ends_with("🚒.txt"));
     });
@@ -47,7 +47,7 @@ fn canonicalize_path_relative_to() {
     Playground::setup("nu_path_test_1", |dirs, sandbox| {
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual = canonicalize_with("spam.txt", dirs.test()).expect("Failed to canonicalize");
+        let actual = make_absolute_with("spam.txt", dirs.test()).expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
 
@@ -64,7 +64,7 @@ fn canonicalize_unicode_path_relative_to_unicode_path_with_spaces() {
         let mut relative_to = dirs.test().to_owned();
         relative_to.push("e-$ èрт🚒♞中片-j");
 
-        let actual = canonicalize_with("🚒.txt", relative_to).expect("Failed to canonicalize");
+        let actual = make_absolute_with("🚒.txt", relative_to).expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("e-$ èрт🚒♞中片-j/🚒.txt");
 
@@ -86,7 +86,7 @@ fn canonicalize_absolute_path_relative_to() {
         let mut absolute_path = dirs.test().to_owned();
         absolute_path.push("spam.txt");
 
-        let actual = canonicalize_with(&absolute_path, "non/existent/directory")
+        let actual = make_absolute_with(&absolute_path, "non/existent/directory")
             .expect("Failed to canonicalize");
         let expected = absolute_path;
 
@@ -98,7 +98,7 @@ fn canonicalize_absolute_path_relative_to() {
 fn canonicalize_dot() {
     let expected = std::env::current_dir().expect("Could not get current directory");
 
-    let actual = canonicalize_with(".", expected.as_path()).expect("Failed to canonicalize");
+    let actual = make_absolute_with(".", expected.as_path()).expect("Failed to canonicalize");
 
     assert_eq!(actual, expected);
 }
@@ -107,7 +107,7 @@ fn canonicalize_dot() {
 fn canonicalize_many_dots() {
     let expected = std::env::current_dir().expect("Could not get current directory");
 
-    let actual = canonicalize_with("././/.//////./././//.///", expected.as_path())
+    let actual = make_absolute_with("././/.//////./././//.///", expected.as_path())
         .expect("Failed to canonicalize");
 
     assert_eq!(actual, expected);
@@ -118,7 +118,7 @@ fn canonicalize_path_with_dot_relative_to() {
     Playground::setup("nu_path_test_1", |dirs, sandbox| {
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual = canonicalize_with("./spam.txt", dirs.test()).expect("Failed to canonicalize");
+        let actual = make_absolute_with("./spam.txt", dirs.test()).expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
 
@@ -131,7 +131,7 @@ fn canonicalize_path_with_many_dots_relative_to() {
     Playground::setup("nu_path_test_1", |dirs, sandbox| {
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual = canonicalize_with("././/.//////./././//.////spam.txt", dirs.test())
+        let actual = make_absolute_with("././/.//////./././//.////spam.txt", dirs.test())
             .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
@@ -143,7 +143,7 @@ fn canonicalize_path_with_many_dots_relative_to() {
 #[test]
 fn canonicalize_double_dot() {
     let cwd = std::env::current_dir().expect("Could not get current directory");
-    let actual = canonicalize_with("..", &cwd).expect("Failed to canonicalize");
+    let actual = make_absolute_with("..", &cwd).expect("Failed to canonicalize");
     let expected = cwd
         .parent()
         .expect("Could not get parent of current directory");
@@ -158,7 +158,7 @@ fn canonicalize_path_with_double_dot_relative_to() {
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
         let actual =
-            canonicalize_with("foo/../spam.txt", dirs.test()).expect("Failed to canonicalize");
+            make_absolute_with("foo/../spam.txt", dirs.test()).expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
 
@@ -172,7 +172,7 @@ fn canonicalize_path_with_many_double_dots_relative_to() {
         sandbox.mkdir("foo/bar/baz");
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual = canonicalize_with("foo/bar/baz/../../../spam.txt", dirs.test())
+        let actual = make_absolute_with("foo/bar/baz/../../../spam.txt", dirs.test())
             .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
@@ -190,7 +190,7 @@ fn canonicalize_ndots2() {
         let output = nu!( cwd: dirs.root(), "cd nu_path_test_1/aaa/bbb/ccc; $env.PWD");
         let cwd = Path::new(&output.out);
 
-        let actual = canonicalize_with("...", cwd).expect("Failed to canonicalize");
+        let actual = make_absolute_with("...", cwd).expect("Failed to canonicalize");
         let expected = cwd
             .parent()
             .expect("Could not get parent of current directory")
@@ -207,8 +207,8 @@ fn canonicalize_path_with_3_ndots_relative_to() {
         sandbox.mkdir("foo/bar");
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual =
-            canonicalize_with("foo/bar/.../spam.txt", dirs.test()).expect("Failed to canonicalize");
+        let actual = make_absolute_with("foo/bar/.../spam.txt", dirs.test())
+            .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
 
@@ -222,7 +222,7 @@ fn canonicalize_path_with_many_3_ndots_relative_to() {
         sandbox.mkdir("foo/bar/baz/eggs/sausage/bacon");
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual = canonicalize_with(
+        let actual = make_absolute_with(
             "foo/bar/baz/eggs/sausage/bacon/.../.../.../spam.txt",
             dirs.test(),
         )
@@ -240,7 +240,7 @@ fn canonicalize_path_with_4_ndots_relative_to() {
         sandbox.mkdir("foo/bar/baz");
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual = canonicalize_with("foo/bar/baz/..../spam.txt", dirs.test())
+        let actual = make_absolute_with("foo/bar/baz/..../spam.txt", dirs.test())
             .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
@@ -255,7 +255,7 @@ fn canonicalize_path_with_many_4_ndots_relative_to() {
         sandbox.mkdir("foo/bar/baz/eggs/sausage/bacon");
         sandbox.with_files(&[EmptyFile("spam.txt")]);
 
-        let actual = canonicalize_with(
+        let actual = make_absolute_with(
             "foo/bar/baz/eggs/sausage/bacon/..../..../spam.txt",
             dirs.test(),
         )
@@ -276,7 +276,7 @@ fn canonicalize_path_with_way_too_many_dots_relative_to() {
         let mut relative_to = dirs.test().to_owned();
         relative_to.push("foo/bar/baz/eggs/sausage/bacon/vikings");
 
-        let actual = canonicalize_with("././..////././...///././.....///spam.txt", relative_to)
+        let actual = make_absolute_with("././..////././...///././.....///spam.txt", relative_to)
             .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
@@ -294,7 +294,7 @@ fn canonicalize_unicode_path_with_way_too_many_dots_relative_to_unicode_path_wit
         let mut relative_to = dirs.test().to_owned();
         relative_to.push("foo/áčěéí  +šř=é/baz/eggs/e-$ èрт🚒♞中片-j/bacon/öäöä öäöä");
 
-        let actual = canonicalize_with("././..////././...///././.....///🚒.txt", relative_to)
+        let actual = make_absolute_with("././..////././...///././.....///🚒.txt", relative_to)
             .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("🚒.txt");
@@ -308,7 +308,7 @@ fn canonicalize_tilde() {
     let tilde_path = "~";
 
     let cwd = std::env::current_dir().expect("Could not get current directory");
-    let actual = canonicalize_with(tilde_path, cwd).expect("Failed to canonicalize");
+    let actual = make_absolute_with(tilde_path, cwd).expect("Failed to canonicalize");
 
     assert!(actual.is_absolute());
     assert!(!actual.starts_with("~"));
@@ -319,7 +319,7 @@ fn canonicalize_tilde_relative_to() {
     let tilde_path = "~";
 
     let actual =
-        canonicalize_with(tilde_path, "non/existent/path").expect("Failed to canonicalize");
+        make_absolute_with(tilde_path, "non/existent/path").expect("Failed to canonicalize");
 
     assert!(actual.is_absolute());
     assert!(!actual.starts_with("~"));
@@ -336,7 +336,7 @@ fn canonicalize_symlink() {
         symlink_path.push("link_to_spam.txt");
 
         let cwd = std::env::current_dir().expect("Could not get current directory");
-        let actual = canonicalize_with(symlink_path, cwd).expect("Failed to canonicalize");
+        let actual = make_absolute_with(symlink_path, cwd).expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
 
@@ -352,7 +352,7 @@ fn canonicalize_symlink_relative_to() {
         sandbox.symlink("spam.txt", "link_to_spam.txt");
 
         let actual =
-            canonicalize_with("link_to_spam.txt", dirs.test()).expect("Failed to canonicalize");
+            make_absolute_with("link_to_spam.txt", dirs.test()).expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
 
@@ -369,7 +369,7 @@ fn canonicalize_symlink_loop_relative_to_should_fail() {
         sandbox.symlink("spam.txt", "link_to_spam.txt");
         sandbox.symlink("link_to_spam.txt", "spam.txt");
 
-        let actual = canonicalize_with("link_to_spam.txt", dirs.test());
+        let actual = make_absolute_with("link_to_spam.txt", dirs.test());
 
         assert!(actual.is_err());
     });
@@ -383,7 +383,7 @@ fn canonicalize_nested_symlink_relative_to() {
         sandbox.symlink("spam.txt", "link_to_spam.txt");
         sandbox.symlink("link_to_spam.txt", "link_to_link_to_spam.txt");
 
-        let actual = canonicalize_with("link_to_link_to_spam.txt", dirs.test())
+        let actual = make_absolute_with("link_to_link_to_spam.txt", dirs.test())
             .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("spam.txt");
@@ -402,7 +402,7 @@ fn canonicalize_nested_symlink_within_symlink_dir_relative_to() {
         sandbox.symlink("foo/bar/link_to_spam.txt", "foo/link_to_link_to_spam.txt");
         sandbox.symlink("foo", "link_to_foo");
 
-        let actual = canonicalize_with("link_to_foo/link_to_link_to_spam.txt", dirs.test())
+        let actual = make_absolute_with("link_to_foo/link_to_link_to_spam.txt", dirs.test())
             .expect("Failed to canonicalize");
         let mut expected = dirs.test().to_owned();
         expected.push("foo/bar/baz/spam.txt");
@@ -416,7 +416,7 @@ fn canonicalize_should_fail() {
     let path = Path::new("/foo/bar/baz"); // hopefully, this path does not exist
 
     let cwd = std::env::current_dir().expect("Could not get current directory");
-    assert!(canonicalize_with(path, cwd).is_err());
+    assert!(make_absolute_with(path, cwd).is_err());
 }
 
 #[test]
@@ -424,7 +424,7 @@ fn canonicalize_with_should_fail() {
     let relative_to = "/foo";
     let path = "bar/baz";
 
-    assert!(canonicalize_with(path, relative_to).is_err());
+    assert!(make_absolute_with(path, relative_to).is_err());
 }
 
 #[cfg(windows)]
@@ -433,7 +433,7 @@ fn canonicalize_unc() {
     // Ensure that canonicalizing UNC paths does not turn them verbatim.
     // Assumes the C drive exists and that the `localhost` UNC path works.
     let actual =
-        nu_path::canonicalize_with(r"\\localhost\c$", ".").expect("failed to canonicalize");
+        nu_path::make_absolute_with(r"\\localhost\c$", ".").expect("failed to canonicalize");
     let expected = Path::new(r"\\localhost\c$");
     assert_eq!(actual, expected);
 }

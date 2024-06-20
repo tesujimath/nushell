@@ -2,7 +2,7 @@ use crate::util::eval_source;
 use log::{info, trace};
 use nu_engine::{convert_env_values, eval_block};
 use nu_parser::parse;
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_with;
 use nu_protocol::{
     debugger::WithoutDebug,
     engine::{EngineState, Stack, StateWorkingSet},
@@ -28,7 +28,7 @@ pub fn evaluate_file(
     let cwd = engine_state.cwd_as_string(Some(stack))?;
 
     let file_path =
-        canonicalize_with(&path, cwd).map_err(|err| ShellError::FileNotFoundCustom {
+        make_absolute_with(&path, cwd).map_err(|err| ShellError::FileNotFoundCustom {
             msg: format!("Could not access file '{path}': {err}"),
             span: Span::unknown(),
         })?;

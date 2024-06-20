@@ -73,16 +73,7 @@ impl GStat {
             ));
         }
 
-        let repo_path = match absolute_path.canonicalize() {
-            Ok(p) => p,
-            Err(e) => {
-                return Err(LabeledError::new(format!(
-                    "error canonicalizing [{}]",
-                    absolute_path.display()
-                ))
-                .with_label(e.to_string(), path.span));
-            }
-        };
+        let repo_path = absolute_path;
 
         let (stats, repo) = if let Ok(mut repo) = Repository::discover(repo_path) {
             (Stats::new(&mut repo), repo)

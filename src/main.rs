@@ -23,7 +23,7 @@ use miette::Result;
 use nu_cli::gather_parent_env_vars;
 use nu_cmd_base::util::get_init_cwd;
 use nu_lsp::LanguageServer;
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_with;
 use nu_protocol::{
     engine::EngineState, report_error_new, ByteStream, PipelineData, ShellError, Span, Spanned,
     Value,
@@ -93,7 +93,7 @@ fn main() -> Result<()> {
     if let Ok(xdg_config_home) = std::env::var("XDG_CONFIG_HOME") {
         if !xdg_config_home.is_empty() {
             if nushell_config_path
-                != canonicalize_with(&xdg_config_home, &init_cwd)
+                != make_absolute_with(&xdg_config_home, &init_cwd)
                     .unwrap_or(PathBuf::from(&xdg_config_home))
                     .join("nushell")
             {
@@ -105,7 +105,7 @@ fn main() -> Result<()> {
                     },
                 );
             } else if let Some(old_config) =
-                nu_path::get_canonicalized_path(dirs_next::config_dir()).map(|p| p.join("nushell"))
+                nu_path::get_absolute_path(dirs_next::config_dir()).map(|p| p.join("nushell"))
             {
                 let xdg_config_empty = nushell_config_path
                     .read_dir()
@@ -407,8 +407,8 @@ fn main() -> Result<()> {
 
         let mut working_set = StateWorkingSet::new(&engine_state);
         for plugin_filename in plugins {
-            // Make sure the plugin filenames are canonicalized
-            let filename = canonicalize_with(&plugin_filename.item, &init_cwd)
+            // Make sure the plugin filenames are made absolute
+            let filename = make_absolute_with(&plugin_filename.item, &init_cwd)
                 .err_span(plugin_filename.span)
                 .map_err(ShellError::from)?;
 

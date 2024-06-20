@@ -5,6 +5,7 @@
 use lscolors::{LsColors, Style};
 use nu_color_config::{color_from_hex, StyleComputer, TextStyle};
 use nu_engine::{command_prelude::*, env::get_config, env_to_string};
+use nu_path::make_absolute;
 use nu_pretty_hex::HexConfig;
 use nu_protocol::{
     ByteStream, Config, DataSource, ListStream, PipelineMetadata, TableMode, ValueIterator,
@@ -996,8 +997,7 @@ fn render_path_name(
 
     let ansi_style = style.map(Style::to_nu_ansi_term_style).unwrap_or_default();
 
-    let full_path = PathBuf::from(stripped_path.as_ref())
-        .canonicalize()
+    let full_path = make_absolute(PathBuf::from(stripped_path.as_ref()))
         .unwrap_or_else(|_| PathBuf::from(stripped_path.as_ref()));
 
     let full_path_link = make_clickable_link(
