@@ -84,7 +84,13 @@ pub fn version(engine_state: &EngineState, span: Span) -> Result<PipelineData, S
     // - installed_plugins
     let mut record = Record::with_capacity(17);
 
-    record.push("version", Value::string(env!("CARGO_PKG_VERSION"), span));
+    record.push(
+        "version",
+        Value::string(
+            format!("{}-no-canonicalize", env!("CARGO_PKG_VERSION")),
+            span,
+        ),
+    );
 
     push_version_numbers(&mut record, span);
 
