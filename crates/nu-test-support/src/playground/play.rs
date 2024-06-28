@@ -81,13 +81,14 @@ impl<'a> Playground<'a> {
 
         let fixtures = fs::fixtures();
         let cwd = std::env::current_dir().expect("Could not get current working directory.");
-        let fixtures = nu_path::make_absolute_with(fixtures.clone(), cwd).unwrap_or_else(|e| {
-            panic!(
-                "Couldn't canonicalize fixtures path {}: {:?}",
-                fixtures.display(),
-                e
-            )
-        });
+        let fixtures =
+            nu_path::make_absolute_and_clean_with(fixtures.clone(), cwd).unwrap_or_else(|e| {
+                panic!(
+                    "Couldn't canonicalize fixtures path {}: {:?}",
+                    fixtures.display(),
+                    e
+                )
+            });
 
         let mut playground = Playground {
             root,
@@ -101,8 +102,8 @@ impl<'a> Playground<'a> {
         let playground_root = playground.root.path();
 
         let cwd = std::env::current_dir().expect("Could not get current working directory.");
-        let test =
-            nu_path::make_absolute_with(playground_root.join(topic), cwd).unwrap_or_else(|e| {
+        let test = nu_path::make_absolute_and_clean_with(playground_root.join(topic), cwd)
+            .unwrap_or_else(|e| {
                 panic!(
                     "Couldn't canonicalize test path {}: {:?}",
                     playground_root.join(topic).display(),
@@ -111,13 +112,14 @@ impl<'a> Playground<'a> {
             });
 
         let cwd = std::env::current_dir().expect("Could not get current working directory.");
-        let root = nu_path::make_absolute_with(playground_root, cwd).unwrap_or_else(|e| {
-            panic!(
-                "Couldn't canonicalize tests root path {}: {:?}",
-                playground_root.display(),
-                e
-            )
-        });
+        let root =
+            nu_path::make_absolute_and_clean_with(playground_root, cwd).unwrap_or_else(|e| {
+                panic!(
+                    "Couldn't canonicalize tests root path {}: {:?}",
+                    playground_root.display(),
+                    e
+                )
+            });
 
         let dirs = Dirs {
             root,

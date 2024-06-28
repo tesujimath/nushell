@@ -18,7 +18,7 @@ pub(crate) fn create_nu_constant(engine_state: &EngineState, span: Span) -> Valu
         let cwd = engine_state.current_work_dir();
 
         if path.exists() {
-            match nu_path::make_absolute_with(path, cwd) {
+            match nu_path::make_absolute_and_clean_with(path, cwd) {
                 Ok(abs_path) => abs_path,
                 Err(_) => path.to_owned(),
             }

@@ -71,7 +71,9 @@ impl Command for Cd {
 
                     // If `--physical` is specified, make the path absolute; otherwise expand the path.
                     if physical {
-                        if let Ok(path) = nu_path::make_absolute_with(path_no_whitespace, &cwd) {
+                        if let Ok(path) =
+                            nu_path::make_absolute_and_clean_with(path_no_whitespace, &cwd)
+                        {
                             if !path.is_dir() {
                                 return Err(ShellError::NotADirectory { span: v.span });
                             };

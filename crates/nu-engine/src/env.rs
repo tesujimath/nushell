@@ -1,5 +1,5 @@
 use crate::ClosureEvalOnce;
-use nu_path::make_absolute_with;
+use nu_path::make_absolute_and_clean_with;
 use nu_protocol::{
     ast::{Call, Expr},
     engine::{EngineState, Stack, StateWorkingSet},
@@ -190,7 +190,7 @@ pub fn current_dir(engine_state: &EngineState, stack: &Stack) -> Result<PathBuf,
     // We're using `make_absolute_with` instead of `omnipath::sys_absolute()` because
     // we still need to simplify Windows paths. "." is safe because `cwd` should
     // be an absolute path already.
-    make_absolute_with(&cwd, ".").map_err(|_| ShellError::DirectoryNotFound {
+    make_absolute_and_clean_with(&cwd, ".").map_err(|_| ShellError::DirectoryNotFound {
         dir: cwd.to_string_lossy().to_string(),
         span: Span::unknown(),
     })
@@ -206,7 +206,7 @@ pub fn current_dir_const(working_set: &StateWorkingSet) -> Result<PathBuf, Shell
     // We're using `make_absolute_with` instead of `omnipath::sys_absolute()` because
     // we still need to simplify Windows paths. "." is safe because `cwd` should
     // be an absolute path already.
-    make_absolute_with(&cwd, ".").map_err(|_| ShellError::DirectoryNotFound {
+    make_absolute_and_clean_with(&cwd, ".").map_err(|_| ShellError::DirectoryNotFound {
         dir: cwd.to_string_lossy().to_string(),
         span: Span::unknown(),
     })
@@ -294,7 +294,7 @@ pub fn find_in_dirs_env(
     };
 
     let check_dir = |lib_dirs: Option<Value>| -> Option<PathBuf> {
-        if let Ok(p) = make_absolute_with(filename, &cwd) {
+        if let Ok(p) = make_absolute_and_clean_with(filename, &cwd) {
             return Some(p);
         }
         let path = Path::new(filename);
@@ -308,8 +308,8 @@ pub fn find_in_dirs_env(
             .iter()
             .map(|lib_dir| -> Option<PathBuf> {
                 let dir = lib_dir.to_path().ok()?;
-                let dir_abs = make_absolute_with(dir, &cwd).ok()?;
-                make_absolute_with(filename, dir_abs).ok()
+                let dir_abs = make_absolute_and_clean_with(dir, &cwd).ok()?;
+                make_absolute_and_clean_with(filename, dir_abs).ok()
             })
             .find(Option::is_some)
             .flatten()

@@ -4,7 +4,7 @@ use nu_engine::{
     command_prelude::*,
     env::{current_dir_str, current_dir_str_const},
 };
-use nu_path::{expand_path_with, make_absolute_with};
+use nu_path::{expand_path_with, make_absolute_and_clean_with};
 use nu_protocol::engine::StateWorkingSet;
 use std::path::Path;
 
@@ -148,7 +148,7 @@ impl Command for SubCommand {
 
 fn expand(path: &Path, span: Span, args: &Arguments) -> Value {
     if args.strict {
-        match make_absolute_with(path, &args.cwd) {
+        match make_absolute_and_clean_with(path, &args.cwd) {
             Ok(p) => {
                 if args.not_follow_symlink {
                     Value::string(
@@ -178,7 +178,7 @@ fn expand(path: &Path, span: Span, args: &Arguments) -> Value {
             span,
         )
     } else {
-        make_absolute_with(path, &args.cwd)
+        make_absolute_and_clean_with(path, &args.cwd)
             .map(|p| Value::string(p.to_string_lossy(), span))
             .unwrap_or_else(|_| {
                 Value::string(

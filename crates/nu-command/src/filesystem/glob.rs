@@ -179,7 +179,7 @@ impl Command for Glob {
         };
 
         let path = engine_state.cwd_as_string(Some(stack))?;
-        let path = match nu_path::make_absolute_with(prefix, path) {
+        let path = match nu_path::make_absolute_and_clean_with(prefix, path) {
             Ok(path) => path,
             Err(e) if e.to_string().contains("os error 2") =>
             // path we're trying to glob doesn't exist,

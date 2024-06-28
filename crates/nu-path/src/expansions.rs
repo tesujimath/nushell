@@ -27,25 +27,25 @@ where
     }
 }
 
-/// Return the path in its absolute form.
-pub fn make_absolute(path: impl AsRef<Path>) -> io::Result<PathBuf> {
+/// Return the path in its absolute clean form.
+pub fn make_absolute_and_clean(path: impl AsRef<Path>) -> io::Result<PathBuf> {
     let path = expand_tilde(path);
     let path = expand_ndots(path);
 
-    helpers::make_absolute(&path)
+    helpers::make_absolute_and_clean(&path)
 }
 
-/// Return the path in its absolute form.
+/// Return the path in its absolute clean form.
 ///
 /// The input path is specified relative to another path
-pub fn make_absolute_with<P, Q>(path: P, relative_to: Q) -> io::Result<PathBuf>
+pub fn make_absolute_and_clean_with<P, Q>(path: P, relative_to: Q) -> io::Result<PathBuf>
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
 {
     let path = join_path_relative(path, relative_to, true);
 
-    make_absolute(path)
+    make_absolute_and_clean(path)
 }
 
 fn expand_path(path: impl AsRef<Path>, need_expand_tilde: bool) -> PathBuf {
@@ -105,14 +105,14 @@ where
 {
     let filename = filename.as_ref();
     let cwd = cwd.as_ref();
-    match make_absolute_with(filename, cwd) {
+    match make_absolute_and_clean_with(filename, cwd) {
         Ok(path) => Ok(path),
         Err(err) => {
             // Try to find it in `dirs` first, before giving up
             let mut found = None;
             for dir in dirs() {
-                if let Ok(path) =
-                    make_absolute_with(dir, cwd).and_then(|dir| make_absolute_with(filename, dir))
+                if let Ok(path) = make_absolute_and_clean_with(dir, cwd)
+                    .and_then(|dir| make_absolute_and_clean_with(filename, dir))
                 {
                     found = Some(path);
                     break;
