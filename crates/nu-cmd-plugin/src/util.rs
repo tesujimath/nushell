@@ -53,7 +53,7 @@ pub(crate) fn modify_plugin_file(
     Ok(())
 }
 
-pub(crate) fn canonicalize_possible_filename_arg(
+pub(crate) fn make_absolute_possible_filename_arg(
     engine_state: &EngineState,
     stack: &Stack,
     arg: &str,
@@ -62,7 +62,7 @@ pub(crate) fn canonicalize_possible_filename_arg(
     #[allow(deprecated)]
     if let Ok(cwd) = nu_engine::current_dir(engine_state, stack) {
         let path = nu_path::expand_path_with(arg, &cwd, true);
-        // Try to canonicalize
+        // Try to make absolute
         nu_path::locate_in_dirs(&path, &cwd, || get_plugin_dirs(engine_state, stack))
             // If we couldn't locate it, return the expanded path alone
             .unwrap_or(path)

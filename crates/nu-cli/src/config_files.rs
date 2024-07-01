@@ -1,6 +1,6 @@
 use crate::util::eval_source;
 #[cfg(feature = "plugin")]
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_and_clean_with;
 #[cfg(feature = "plugin")]
 use nu_protocol::{engine::StateWorkingSet, report_error, ParseError, PluginRegistryFile, Spanned};
 use nu_protocol::{
@@ -184,11 +184,11 @@ pub fn add_plugin_file(
             let path = Path::new(&plugin_file.item);
             let path_dir = path.real_parent().unwrap_or_else(|_e| path.to_path_buf());
             // Just try to canonicalize the directory of the plugin file first.
-            if let Ok(path_dir) = canonicalize_with(&path_dir, &cwd) {
+            if let Ok(path_dir) = make_absolute_and_clean_with(&path_dir, &cwd) {
                 // Try to canonicalize the actual filename, but it's ok if that fails. The file doesn't
                 // have to exist.
                 let path = path_dir.join(path.file_name().unwrap_or(path.as_os_str()));
-                let path = canonicalize_with(&path, &cwd).unwrap_or(path);
+                let path = make_absolute_and_clean_with(&path, &cwd).unwrap_or(path);
                 engine_state.plugin_path = Some(path)
             } else {
                 // It's an error if the directory for the plugin file doesn't exist.
@@ -203,9 +203,11 @@ pub fn add_plugin_file(
         } else if let Some(mut plugin_path) = nu_path::config_dir() {
             // Path to store plugins signatures
             plugin_path.push(storage_path);
-            let mut plugin_path = canonicalize_with(&plugin_path, &cwd).unwrap_or(plugin_path);
+            let mut plugin_path =
+                make_absolute_and_clean_with(&plugin_path, &cwd).unwrap_or(plugin_path);
             plugin_path.push(PLUGIN_FILE);
-            let plugin_path = canonicalize_with(&plugin_path, &cwd).unwrap_or(plugin_path);
+            let plugin_path =
+                make_absolute_and_clean_with(&plugin_path, &cwd).unwrap_or(plugin_path);
             engine_state.plugin_path = Some(plugin_path);
         }
     }
@@ -278,12 +280,14 @@ pub fn migrate_old_plugin_file(engine_state: &EngineState, storage_path: &str) -
 
     let Some(config_dir) = nu_path::config_dir().and_then(|mut dir| {
         dir.push(storage_path);
-        nu_path::canonicalize_with(dir, &cwd).ok()
+        nu_path::make_absolute_and_clean_with(dir, &cwd).ok()
     }) else {
         return false;
     };
 
-    let Ok(old_plugin_file_path) = nu_path::canonicalize_with(OLD_PLUGIN_FILE, &config_dir) else {
+    let Ok(old_plugin_file_path) =
+        nu_path::make_absolute_and_clean_with(OLD_PLUGIN_FILE, &config_dir)
+    else {
         return false;
     };
 

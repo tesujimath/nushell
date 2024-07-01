@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use nu_engine::{command_prelude::*, env_to_strings};
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_and_clean_with;
 use std::{
     ffi::{OsStr, OsString},
     path::Path,
@@ -59,7 +59,7 @@ impl Command for Start {
         } else {
             // try to distinguish between file not found and opening url without prefix
             if let Ok(canon_path) =
-                canonicalize_with(path_no_whitespace, std::env::current_dir()?.as_path())
+                make_absolute_and_clean_with(path_no_whitespace, std::env::current_dir()?.as_path())
             {
                 open_path(canon_path, engine_state, stack, path.span)?;
             } else {

@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 fn path(p: &Path) -> PathBuf {
     let cwd = std::env::current_dir().expect("Could not get current working directory.");
-    nu_path::canonicalize_with(p, cwd)
+    nu_path::make_absolute_and_clean_with(p, cwd)
         .unwrap_or_else(|e| panic!("Couldn't canonicalize path {}: {:?}", p.display(), e))
 }
 

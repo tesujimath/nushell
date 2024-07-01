@@ -13,9 +13,8 @@ bench = false
 
 [dependencies]
 dirs-next = { workspace = true }
-
-[target.'cfg(windows)'.dependencies]
 omnipath = { workspace = true }
+real_parent = { workspace = true }
 
 [target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))'.dependencies]
 pwd = { workspace = true }

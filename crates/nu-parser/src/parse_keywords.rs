@@ -6,7 +6,7 @@ use crate::{
 };
 use itertools::Itertools;
 use log::trace;
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_and_clean_with;
 use nu_protocol::{
     ast::{
         Argument, Block, Call, Expr, Expression, ImportPattern, ImportPatternHead,
@@ -3746,7 +3746,7 @@ pub fn parse_register(working_set: &mut StateWorkingSet, lite_command: &LiteComm
         String::from_utf8(shell_expr.to_vec())
             .map_err(|_| ParseError::NonUtf8(expr.span))
             .and_then(|name| {
-                canonicalize_with(&name, cwd)
+                make_absolute_and_clean_with(&name, cwd)
                     .map_err(|_| ParseError::RegisteredFileNotFound(name, expr.span))
             })
             .and_then(|path| {
@@ -4029,7 +4029,7 @@ pub fn find_in_dirs(
         }
 
         // Try if we have an existing physical path
-        if let Ok(p) = canonicalize_with(filename, actual_cwd) {
+        if let Ok(p) = make_absolute_and_clean_with(filename, actual_cwd) {
             return Some(ParserPath::RealPath(p));
         }
 
@@ -4051,8 +4051,8 @@ pub fn find_in_dirs(
             .iter()
             .map(|lib_dir| -> Option<PathBuf> {
                 let dir = lib_dir.to_path().ok()?;
-                let dir_abs = canonicalize_with(dir, actual_cwd).ok()?;
-                canonicalize_with(filename, dir_abs).ok()
+                let dir_abs = make_absolute_and_clean_with(dir, actual_cwd).ok()?;
+                make_absolute_and_clean_with(filename, dir_abs).ok()
             })
             .find(Option::is_some)
             .flatten()
@@ -4073,7 +4073,7 @@ pub fn find_in_dirs(
             .current_working_directory()
             .unwrap_or(Path::new(cwd));
 
-        if let Ok(p) = canonicalize_with(filename, actual_cwd) {
+        if let Ok(p) = make_absolute_and_clean_with(filename, actual_cwd) {
             Some(p)
         } else {
             let path = Path::new(filename);
@@ -4086,8 +4086,10 @@ pub fn find_in_dirs(
                         for lib_dir in dirs {
                             if let Ok(dir) = lib_dir.to_path() {
                                 // make sure the dir is absolute path
-                                if let Ok(dir_abs) = canonicalize_with(dir, actual_cwd) {
-                                    if let Ok(path) = canonicalize_with(filename, dir_abs) {
+                                if let Ok(dir_abs) = make_absolute_and_clean_with(dir, actual_cwd) {
+                                    if let Ok(path) =
+                                        make_absolute_and_clean_with(filename, dir_abs)
+                                    {
                                         return Some(path);
                                     }
                                 }

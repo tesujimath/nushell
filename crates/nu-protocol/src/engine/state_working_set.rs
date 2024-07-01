@@ -601,7 +601,7 @@ impl<'a> StateWorkingSet<'a> {
         next_id
     }
 
-    /// Returns the current working directory as a String, which is guaranteed to be canonicalized.
+    /// Returns the current working directory as a String, which is guaranteed to be absolute.
     /// Returns an empty string if $env.PWD doesn't exist, is not a String, or is not an absolute path.
     ///
     /// It does NOT consider modifications to the working directory made on a stack.

@@ -8,7 +8,7 @@ fn example_plugin_path() -> PathBuf {
     nu_test_support::commands::ensure_plugins_built();
 
     let bins_path = nu_test_support::fs::binaries();
-    nu_path::canonicalize_with(
+    nu_path::make_absolute_and_clean_with(
         if cfg!(windows) {
             "nu_plugin_example.exe"
         } else {

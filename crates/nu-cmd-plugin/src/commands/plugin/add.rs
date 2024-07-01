@@ -92,7 +92,7 @@ apparent the next time `nu` is next launched with that plugin registry file.
 
         let shell_expanded = shell
             .as_ref()
-            .map(|s| nu_path::canonicalize_with(&s.item, &cwd).err_span(s.span))
+            .map(|s| nu_path::make_absolute_and_clean_with(&s.item, &cwd).err_span(s.span))
             .transpose()?;
 
         // Parse the plugin filename so it can be used to spawn the plugin

@@ -253,7 +253,7 @@ pub fn nu_run_test(opts: NuOpts, commands: impl AsRef<str>, with_std: bool) -> O
     let test_bins = crate::fs::binaries();
 
     let cwd = std::env::current_dir().expect("Could not get current working directory.");
-    let test_bins = nu_path::canonicalize_with(&test_bins, cwd).unwrap_or_else(|e| {
+    let test_bins = nu_path::make_absolute_and_clean_with(&test_bins, cwd).unwrap_or_else(|e| {
         panic!(
             "Couldn't canonicalize dummy binaries path {}: {:?}",
             test_bins.display(),
@@ -334,7 +334,7 @@ where
     V: AsRef<OsStr>,
 {
     let test_bins = crate::fs::binaries();
-    let test_bins = nu_path::canonicalize_with(&test_bins, ".").unwrap_or_else(|e| {
+    let test_bins = nu_path::make_absolute_and_clean_with(&test_bins, ".").unwrap_or_else(|e| {
         panic!(
             "Couldn't canonicalize dummy binaries path {}: {:?}",
             test_bins.display(),
@@ -360,7 +360,7 @@ where
         .iter()
         .map(|plugin_name| {
             let plugin = with_exe(plugin_name);
-            let plugin_path = nu_path::canonicalize_with(&plugin, &test_bins)
+            let plugin_path = nu_path::make_absolute_and_clean_with(&plugin, &test_bins)
                 .unwrap_or_else(|_| panic!("failed to canonicalize plugin {} path", &plugin));
             let plugin_path = plugin_path.to_string_lossy();
             escape_quote_string(&plugin_path)

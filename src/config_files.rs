@@ -2,7 +2,7 @@ use log::warn;
 #[cfg(feature = "plugin")]
 use nu_cli::read_plugin_file;
 use nu_cli::{eval_config_contents, eval_source};
-use nu_path::canonicalize_with;
+use nu_path::make_absolute_and_clean_with;
 use nu_protocol::{
     engine::{EngineState, Stack, StateWorkingSet},
     report_error, report_error_new, Config, ParseError, PipelineData, Spanned,
@@ -38,7 +38,7 @@ pub(crate) fn read_config_file(
 
         match engine_state.cwd_as_string(Some(stack)) {
             Ok(cwd) => {
-                if let Ok(path) = canonicalize_with(&file.item, cwd) {
+                if let Ok(path) = make_absolute_and_clean_with(&file.item, cwd) {
                     eval_config_contents(path, engine_state, stack);
                 } else {
                     let e = ParseError::FileNotFound(file.item, file.span);
@@ -300,12 +300,12 @@ pub(crate) fn set_config_path(
         &cwd, &default_config_name, &key, &config_file
     );
     let config_path = match config_file {
-        Some(s) => canonicalize_with(&s.item, cwd).ok(),
+        Some(s) => make_absolute_and_clean_with(&s.item, cwd).ok(),
         None => nu_path::config_dir().map(|mut p| {
             p.push(NUSHELL_FOLDER);
-            let mut p = canonicalize_with(&p, cwd).unwrap_or(p);
+            let mut p = make_absolute_and_clean_with(&p, cwd).unwrap_or(p);
             p.push(default_config_name);
-            canonicalize_with(&p, cwd).unwrap_or(p)
+            make_absolute_and_clean_with(&p, cwd).unwrap_or(p)
         }),
     };
 
